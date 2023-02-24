@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Mongo connection
-//mongoDB connection
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 mongoose.connect(`mongodb+srv://DefaultUser:${process.env.PASSWORD}@cluster0.4qznb9j.mongodb.net/?retryWrites=true&w=majority`, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -86,9 +85,6 @@ app.post('/api/users/:_id/exercises', (req, res) => {
     duration    : req.body.duration,
     date        : exerciseDate
   })
-  // console.log('Date input and object', req.body.date, exerciseDate)
-  // console.log(exerciseModel)
-  // console.log("Look at my _________id", req.params._id, req.body);
 
   //aggregate: push to array -> get size of array -> save to db
   UserModel.aggregate(
@@ -125,14 +121,9 @@ app.get('/api/users/:_id/logs/', (req, res) => {
 // app.get('/api/users/:_id/logs/:from?&:to?&:limit?', (req, res) => {
   // find user => sort user.log by optional params => map user.log.date to dateString()
 
-  // Make params work now - use to sanitize url input later
-  const FROM  = req.query.from ;
-  const TO    = req.query.to   ;
+  const FROM  = req.query.from;
+  const TO    = req.query.to;
   const LIMIT = req.query.limit;
-  /* const FROM  = req.params.from  || null;
-  const TO    = req.params.to    || null;
-  const LIMIT = req.params.limit || null; */
-
 
   UserModel.findById(req.params._id, (error, document) => {
     if (error)
@@ -145,6 +136,7 @@ app.get('/api/users/:_id/logs/', (req, res) => {
       document.log = document.log.filter(item => Date.parse(item.date) <= Date.parse(TO));
     if(LIMIT && LIMIT >= 1)
       document.log = document.log.slice(0, LIMIT);
+
     // convert the log dates to datestrings
     for (let i = 0; i < document.log.length; i++)
       document.log[i].date = document.log[i].date.toDateString();
@@ -155,26 +147,6 @@ app.get('/api/users/:_id/logs/', (req, res) => {
     console.log(document.log);
     res.json(document);
   })
-
-
-  /* UserModel.aggregate([
-    { $match  : { _id : mongoose.Types.ObjectId(req.params._id) } },
-    { $set : {  
-      "log" : { "$filter" : { 
-        "input" : "$log", 
-        "as"    : "item", 
-        "cond"  : { "$gte" : ["$$item.duration", 900 ] } 
-      } }
-    } }
-    // { $match  : { "log.date" : "Fri Feb 12 1965" } }
-    // log -> foreach date(date.toDateString())
-  ], (error, document) => {
-    if (error)
-      return console.error(error);
-    // console.log(document);
-    console.log("aggregate complete");
-    return res.json(document);
-  }); */
 
 })
 
